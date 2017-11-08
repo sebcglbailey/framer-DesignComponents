@@ -48,6 +48,7 @@ addReferenceEvents = (layer) ->
 	originalConstraints = layer.constraintValues
 
 	if layer.constraintValues?.topRef?.layer? || layer.constraintValues?.bottomRef?.layer?
+
 		reference = layer.constraintValues?.topRef?.layer || layer.constraintValues?.bottomRef?.layer
 
 		originalYRef = reference.y
@@ -96,8 +97,6 @@ addReferenceEvents = (layer) ->
 				originalWidthRef = value
 
 
-
-
 Layer::setConstraints = (options={}, origin) ->
 
 	@constraintValues =
@@ -125,7 +124,8 @@ Layer::setConstraints = (options={}, origin) ->
 		@constraintValues.aspectRatioLocked = false
 
 	for ref in [["top", "y", "maxY", "topRef", "bottom"], ["left", "x", "maxX", "leftRef", "right"], ["bottom", "maxY", "y", "bottomRef", "top"], ["right", "maxX", "x", "rightRef", "left"]]
-		if typeof options[ref[0]] == "object"
+
+		if typeof options[ref[0]] == "object" && options[ref[0]] != null && !options[ref[3]]?
 
 			if options[ref[0]].layer?
 				if @parent? && @parent.selectChild(options[ref[0]].layer)?

@@ -9,11 +9,10 @@ A module for converting your designs in design mode into full scalable classes.
 
 ### Links
 
-[Installation](#installation)
-[Native components](#native-components)
-[Custom classes](#custom-classes)
-[Using your class in your prototype](#using-your-class-in-your-prototype)
-[Constraints](#constraints)
+* [Installation](#installation)
+* [Native components](#native-components)
+* [Custom classes](#custom-classes)
+* [Constraints](#constraints)
 
 
 ## Installation
@@ -61,7 +60,7 @@ For example:
 **Note:** You *do not* have to create a target for these layers.
 
 
-## Using your class in your prototype
+### Using your class in your prototype
 
 To add the class to your prototype, simply create a new instance of the class as you would a layer:
 
@@ -186,3 +185,30 @@ See it in action:
 
 ![Card Expand Gif](images/cardContent.gif)
 
+
+
+## States
+
+### Single states
+
+The syntax for adding a single state for an event is:
+
+```
+State_{className}_{event}
+```
+
+eg:
+
+![Single state](images/States1.png)
+
+Adding multiple states for a event (toggling):
+
+```
+{stateName}_State_{className}_{event}
+```
+
+eg:
+
+![Multiple states](images/States2.png)
+
+This will automatically add a switch event to the layer to switch the properties of the layer and all of its children upon the triggering of the event.

@@ -69,6 +69,8 @@ for component in customComponents
 
 				@props = @options
 
+				@setConstraints()
+
 				if @options.state?
 					state = Layer.select "#{@options.state}_State_#{name}*"
 					if state? then @changeState state
