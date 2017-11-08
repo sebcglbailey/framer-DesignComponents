@@ -81,13 +81,13 @@ card = new Design.Card
 
 ```coffeescript
 card = new Design.Card
-	avatar:
-		borderRadius: 0
-		image: Utils.randomImage()
-	subheader:
-		text: "This is a new subheader"
-	content:
-		text: "This is some content that has changed"
+  avatar:
+    borderRadius: 0
+    image: Utils.randomImage()
+  subheader:
+    text: "This is a new subheader"
+  content:
+    text: "This is some content that has changed"
 ```
 
 ![Edited Card](images/Card3.png)
@@ -119,20 +119,20 @@ It also allows you to set up your own constraints within the code, using a simpl
 
 ```coffeescript
 layer = new Layer
-	size: 50
+  size: 50
 
 layer.constraints =
-	top: null
-	left: 20
-	bottom: null
-	right: 20
-	centerX: null
-	centerY: 0.5
-	scaleX: null
-	scaleY: 0.8
-	aspectRatioLocked: true
-	pushDown: true
-	pushRight: null
+  top: null
+  left: 20
+  bottom: null
+  right: 20
+  centerX: null
+  centerY: 0.5
+  scaleX: null
+  scaleY: 0.8
+  aspectRatioLocked: true
+  pushDown: true
+  pushRight: null
 ```
 
 In addition to an easier syntax to the Framer native constraints, you can now also add a constraint to a specific layer. i.e. if you want to have a layer always lie 10px below another layer, you can now do that, no matter what the position or size of the reference layer.
@@ -144,16 +144,16 @@ In addition to an easier syntax to the Framer native constraints, you can now al
 
 ```coffeescript
 reference = new Layer
-	name: "reference"
+  name: "reference"
 
 layer.constraints =
-	top:
-		layer: "reference"
-		value: 10
-		align: "top"
-	left:
-		layer: "reference"
-		value: 20
+  top:
+    layer: "reference"
+    value: 10
+    align: "top"
+  left:
+    layer: "reference"
+    value: 20
 ```
 
 
@@ -165,21 +165,21 @@ If you are using a custom class from the Design mode, you can set the constraint
 
 ```coffeescript
 card = new Design.Card
-	constraints:
-		left: 10
-		right: 10
-	avatar:
-		image: Utils.randomImage()
-		constraints:
-			right: 15
-			top: 15
-			aspectRatioLocked: true
-	content:
-		text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
-		constraints:
-			top:
-				layer: "subheader"
-			pushDown: true
+  constraints:
+    left: 10
+    right: 10
+  avatar:
+    image: Utils.randomImage()
+    constraints:
+      right: 15
+      top: 15
+      aspectRatioLocked: true
+  content:
+    text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
+    constraints:
+      top:
+        layer: "subheader"
+      pushDown: true
 ```
 
 See it in action:
