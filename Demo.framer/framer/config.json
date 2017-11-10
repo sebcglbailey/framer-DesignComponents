@@ -6,7 +6,7 @@
   "contentScale" : 1,
   "cachedDeviceWidth" : 375,
   "fullScreen" : false,
-  "deviceType" : "apple-iphone-7-black",
+  "deviceType" : "apple-iphone-8-space-gray",
   "sharedPrototype" : 0,
   "propertyPanelToggleStates" : {
 
@@ -16,10 +16,11 @@
   "selectedHand" : "",
   "showBezel" : 0,
   "foldedCodeRanges" : [
-    "{38, 150}",
-    "{190, 227}",
-    "{419, 840}",
-    "{1261, 329}"
+    "{37, 187}",
+    "{289, 226}",
+    "{590, 867}",
+    "{1505, 478}",
+    "{2034, 672}"
   ],
   "deviceScale" : "fit"
 }
