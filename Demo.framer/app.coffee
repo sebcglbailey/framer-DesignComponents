@@ -1,9 +1,10 @@
 Design = require "DesignComponents"
 
-
 # DEMO SETUP
 
-Background.image = Utils.randomImage()
+Layer.select(".UIKit").x = Screen.width
+
+Screen.backgroundColor = "#886AE2"
 
 scroll = new ScrollComponent
 	size: Screen
@@ -11,7 +12,12 @@ scroll = new ScrollComponent
 scroll.content.clip = false
 
 
-# SLIDERS - NATAIVE COMPONENTS
+
+
+
+
+# Designing sliders in the design tab, and using the class
+# SLIDERS - NATIVE COMPONENTS
 
 slider = new Design.SliderComponent
 	parent: scroll.content
@@ -25,15 +31,17 @@ rangeSlider = new Design.RangeSliderComponent
 	y: slider.maxY + 75
 	x: Align.center
 
-
+# Designing a custom component in the design tab, and using it as a class
 # CARDS - CUSTOM CLASS
 
+# Recreate the card without editing the content
 card1 = new Design.Card
 	parent: scroll.content
 	name: "card1"
 	y: rangeSlider.maxY + 50
 
 
+# Recreate the card and edit the content
 card2 = new Design.Card
 	parent: scroll.content
 	name: "card2"
@@ -46,8 +54,9 @@ card2 = new Design.Card
 	content:
 		text: "This is some content that has changed"
 
-contentString = "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
 
+
+# Recreate the card, edit the content, and apply some constraints to the child layers
 card3 = new Design.Card
 	parent: scroll.content
 	name: "card3"
@@ -58,20 +67,16 @@ card3 = new Design.Card
 	subheader:
 		text: "Lorem ipsum\nNew subheader"
 	content:
+		text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
 		constraints:
 			top:
 				layer: "subheader"
 			pushDown: true
 
-card3.onTap ->
-	for i in [0..contentString.length]
-		do (i) ->
-			Utils.delay i*0.05, ->
-				card3.content.text = contentString.slice(0, i)
-
-
+# Using states on a custom class to add events
 # STATES WITH CUSTOM CLASSES
 
+# Button will have a "MouseDown" and "MouseUp" event listener
 button = new Design.Button
 	parent: scroll.content
 	name: "button"
@@ -82,11 +87,41 @@ button = new Design.Button
 			layer: "card3"
 			value: 50
 
+# Toggle will have multiple states that it will cycle through on "Tap"
 toggle = new Design.Toggle
 	parent: scroll.content
+	name: "toggle"
 	y: button.maxY + 50
 	x: Align.center
 	constraints:
 		top:
 			layer: "button"
 			value: 50
+
+# Using states on a custom class without an event
+# STATES WITHOUT AN EVENT LISTENER
+
+
+# Setting the state upon initilisation
+emoji = new Design.Emoji
+	parent: scroll.content
+	y: toggle.maxY + 50
+	x: Align.center
+	state: "Angel"
+
+# Setting a state after initilisation
+emoji.state = "Wink"
+emoji.state = Utils.randomChoice ["Smile", "Angel", "Wink", "Unamused"]
+
+# Animating between states
+emoji.onTap ->
+	currentState = @states.current.name
+
+	if currentState == "default" || currentState == "Smile"
+		@animateState "Wink", true
+	else if currentState == "Wink"
+		@animateState "Angel", true
+	else if currentState == "Angel"
+		@animateState "Unamused", true
+	else if currentState == "Unamused"
+		@animateState "Smile", true
