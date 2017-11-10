@@ -13,6 +13,7 @@ A module for converting your designs in design mode into full scalable classes.
 * [Native components](#native-components)
 * [Custom classes](#custom-classes)
 * [Constraints](#constraints)
+* [States](#states)
 
 
 ## Installation
@@ -103,18 +104,18 @@ It also allows you to set up your own constraints within the code, using a simpl
 ### Setting constraints on a new layer
 
 #### Arguments
-<code>top</code> – the distance of the top edge from the top of the parent layer
-<code>left</code> – the distance of the left edge from the left of the parent layer
-<code>bottom</code> – the distance of the bottom edge from the bottom of the parent layer
-<code>right</code> – the distance of the right edge from the right of the parent layer
-<code>centerX</code> – the position of the layer within its parent on horizontal axis as a ratio between 0 - 1
-<code>centerY</code> – the position of the layer within its parent on the vertical axis as a ratio between 0 - 1
-<code>scaleX</code> – the width of the layer relative to its parent width as a ratio between 0 - 1
-<code>scaleY</code> – the height of the layer relative to its parent height as a ratio between 0 - 1
-<code>aspectRatioLocked</code> – the original ratio of width/height of the layer stays the same if set to <code>true</code>
 
-<code>pushDown</code> - have the size of the layer affect its parent's height (best used with TextLayers)
-<code>pushRight</code> - the same as <code>pushDown</code> but affecting the parent's width
+* <code>top</code> – the distance of the top edge from the top of the parent layer.
+* <code>left</code> – the distance of the left edge from the left of the parent layer.
+* <code>bottom</code> – the distance of the bottom edge from the bottom of the parent layer.
+* <code>right</code> – the distance of the right edge from the right of the parent layer.
+* <code>centerX</code> – the position of the layer within its parent on horizontal axis as a ratio between 0 - 1.
+* <code>centerY</code> – the position of the layer within its parent on the vertical axis as a ratio between 0 - 1.
+* <code>scaleX</code> – the width of the layer relative to its parent width as a ratio between 0 - 1.
+* <code>scaleY</code> – the height of the layer relative to its parent height as a ratio between 0 - 1.
+* <code>aspectRatioLocked</code> – the original ratio of width/height of the layer stays the same if set to <code>true</code>.
+* <code>pushDown</code> - have the size of the layer affect its parent's height (best used with TextLayers).
+* <code>pushRight</code> - the same as <code>pushDown</code> but affecting the parent's width.
 
 ```coffeescript
 layer = new Layer
@@ -137,9 +138,10 @@ layer.constraints =
 In addition to an easier syntax to the Framer native constraints, you can now also add a constraint to a specific layer. i.e. if you want to have a layer always lie 10px below another layer, you can now do that, no matter what the position or size of the reference layer.
 
 #### Arguments
-<code>layer</code> – the name of the layer that you are referencing (the reference layer **must** have a <code>name</code> property)
-<code>value</code> – the offset from the reference layer
-<code>align</code> – align the layer to an edge on the reference layer (Default: opposite edge)
+
+* <code>layer</code> – the name of the layer that you are referencing (the reference layer **must** have a <code>name</code> property).
+* <code>value</code> – the offset from the reference layer.
+* <code>align</code> – align the layer to an edge on the reference layer. (Default: opposite edge)
 
 ```coffeescript
 reference = new Layer
@@ -191,7 +193,7 @@ See it in action:
 
 ### Single states
 
-The syntax for adding a single state for an event is:
+The syntax for adding a single state on an event is:
 
 ```
 State_{className}_{event}
@@ -200,6 +202,8 @@ State_{className}_{event}
 eg:
 
 ![Single state](images/States1.png)
+
+### Multiple states
 
 Adding multiple states for a event (toggling):
 
@@ -212,3 +216,40 @@ eg:
 ![Multiple states](images/States2.png)
 
 This will automatically add a switch event to the layer to switch the properties of the layer and all of its children upon the triggering of the event.
+
+### Animating states
+
+By default, the design states will not animate between each other. To add default animation options to the events, simply append <code>_Animate</code> to the end of the layer name.
+
+**For example:**
+
+```coffeescript
+{stateName}_State_{className}_{eventName}_Animate
+```
+
+With your custom classes, there is a new animate function. This will enable the class to animate itself, and all of its descendants at the same time.
+
+```coffeescript
+animateState(stateName, animate, options)
+```
+
+#### Arguments
+
+* <code>stateName</code> – the name of the state to animate to.
+* <code>animate</code> – A boolean, set to override the default animation option for the class. (Optional)
+* <code>options</code> – animation options. (Optional)
+
+```coffeescript
+layer = new Design.Class
+
+layer.animateState "Error",
+  time: 1
+  curve: Spring(damping: 0.8)
+```
+
+
+
+
+
+
+
