@@ -61,7 +61,8 @@ for component in customComponents
 				@addChildren()
 				@setChildProps()
 				
-				@addStateEvents()
+				@stateComponents = Layer.selectAll "*State_#{name}*"
+				@addStates()
 
 				@originalProps = @props
 
@@ -69,9 +70,11 @@ for component in customComponents
 
 				@props = @options
 
+				@setConstraints()
+
 				if @options.state?
-					state = Layer.select "#{@options.state}_State_#{name}*"
-					if state? then @changeState state
+					# state = Layer.select "#{@options.state}_State_#{name}*"
+					@animateState @options.state, false
 
 
 			setChildProps: (parent) ->
@@ -99,7 +102,7 @@ for component in customComponents
 					layer = child.copySingle()
 					layer.parent = parent
 
-					parent[layer.name] = layer
+					@[layer.name] = layer
 
 					if @options[layer.name]?.constraints?
 						layer.setConstraints @options[layer.name].constraints, child
@@ -109,62 +112,108 @@ for component in customComponents
 					if child.children? && child.children.length > 0
 						@addChildren layer, child
 
-			addStateEvents: ->
 
-				stateComponents = Layer.selectAll "*State_#{name}_*"
+			addStates: () ->
 
-				if stateComponents.length > 0
+				@customStates =
+					array: []
 
-					states = {}
-					eventName = ""
-					@stateIndex = 0
+				for state in @stateComponents
 
-					for state in stateComponents
+					do (state) =>
 
-						do (state) =>
+						stateIndex = state.name.indexOf("State")
+						if stateIndex > 0
+							stateName = state.name.slice 0, stateIndex-1
+						else
+							stateName = state.name.split("State_#{name}_")[1]
 
-							eventName = state.name.replace "State_#{name}_", ""
+						@customStates[stateName] = {}
+						@customStates.array.push stateName
 
-							if eventName.includes "_"
-								eventName = eventName.split("_")[1]
-								unless states[eventName]? then states[eventName] = []
-								stateName = state.name.replace "_State_#{name}_#{eventName}", ""
-								states[eventName].push state
+						stateProps = {}
+
+						for prop in stateChangeProps
+							stateProps[prop] = state[prop]
+
+						@states[stateName] = stateProps
+
+						for dec in state.descendants
+							do (dec) =>
+								thisStateProps = {}
+								for prop in stateChangeProps
+									do (prop) =>
+										thisStateProps[prop] = dec[prop]
+								@[dec.name].states[stateName] = thisStateProps
+
+				@addStateEvents()
+
+			addStateEvents: () ->
+
+				events = []
+
+				for state in @stateComponents
+
+					do (state) =>
+
+						if state.name.includes "State_#{name}_"
+
+							if state.name.includes "_State_#{name}_"
+								stateName = state.name.split("_State_#{name}_")[0]
+								eventName = state.name.split("_State_#{name}_")[1]
 							else
-								if Events[eventName]?
+								eventName = state.name.replace "State_#{name}_", ""
+								stateName = eventName
 
-									@on Events[eventName], (event) ->
+							if eventName.includes "_Animate" || eventName.includes "_true" || eventName.includes "_True"
+								animate = true
+								eventName = eventName.split("_")[0]
+							else animate = false
 
-										@changeState state
+							@customStates[stateName].animate = animate
 
-					if Object.keys(states).length > 0
-						
-						for key, value of states
-							
-							if Events[key]?
+							unless events.includes eventName then events.push eventName
 
-								@on Events[key], (event) ->
+				for eventName in events
 
-									@cycleStates value
+					do (eventName) =>
 
+						if Events[eventName]? && @customStates.array.includes eventName
 
-			changeState: (state) ->
+							@on Events[eventName], (event, layer) ->
 
-				for prop in stateChangeProps
-					@[prop] = state[prop]
+								animate = @customStates[eventName].animate
+								@stateSwitch(eventName, {animate: animate})
+								@animateChildren()
 
-				for child in @selectAllChildren "*"
+						else if Events[eventName]?
 
-					stateChild = state.selectChild child.name
+							@on Events[eventName], ->
+								currentIndex = @customStates.array.indexOf(@states.current.name)
+								nextIndex = currentIndex + 1
+								if nextIndex == @customStates.array.length then nextIndex = 0
+								animate = @customStates[@customStates.array[nextIndex]].animate
+								nextState = @customStates.array[nextIndex]
+								
+								@stateSwitch(nextState, {animate: animate})
+								@animateChildren()
 
-					for prop in [stateChangeProps..., "frame"]
-						child[prop] = stateChild[prop]
+			animateChildren: (stateName, animate, options={}) ->
+				unless stateName? then stateName = @states.current.name
+				unless animate? then animate = @customStates[stateName].animate
+				if !animate then options.time = 0
+				for dec in @descendants
+					do (dec) =>
+						dec.stateSwitch(stateName, {animate: animate, options: options})
 
-			cycleStates: (states) ->
-				@changeState states[@stateIndex]
-				if @stateIndex == states.length-1
-					@stateIndex = 0
-				else @stateIndex++
+			animateState: (state, animate, options={}) ->
+
+				if !state? || !@customStates?[state]? then return
+				if !animate? && @customStates?[state]? then animate = @customStates[state].animate else if animate? then animate = animate else animate = false
+				if !animate then options.time = 0
+
+				@stateSwitch(state, {animate: animate, options: options})
+				@animateChildren(state, animate, options)
 
 			@define "constraints",
 				get: -> @options.constraints
@@ -172,6 +221,13 @@ for component in customComponents
 					@options.constraints = value
 					@emit("change:constraints", @options.constraints)
 					@setConstraints value
+
+			@define "state",
+				get: -> @options.state
+				set: (value) ->
+					@options.state = value
+					@emit("change:state", @options.state)
+					@animateState value
 
 
 
