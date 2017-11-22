@@ -55,7 +55,6 @@ card2 = new Design.Card
 		text: "This is some content that has changed"
 
 
-
 # Recreate the card, edit the content, and apply some constraints to the child layers
 card3 = new Design.Card
 	parent: scroll.content
