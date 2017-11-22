@@ -76,11 +76,19 @@ for component in customComponents
 					# state = Layer.select "#{@options.state}_State_#{name}*"
 					@animateState @options.state, false
 
+				# @setTextProps()
+
+			setTextProps: (parent) ->
+				for descendant in @descendants
+
+					if @options[descendant.name]? && @[descendant.name]?
+
+						@[descendant.name].props = @options[descendant.name]
 
 			setChildProps: (parent) ->
 
 				for key, value of @options
-					if @[key]? && @[key] instanceof Layer
+					if @[key]? && (@[key] instanceof Layer || @[key] instanceof TextLayer)
 
 						if @[key].constructor.name == "TextLayer" && @[key].autoSize != true
 							@[key].props = value
@@ -99,18 +107,22 @@ for component in customComponents
 
 				for child in origin.children
 
-					layer = child.copySingle()
-					layer.parent = parent
+					do (child) =>
 
-					@[layer.name] = layer
+						layer = child.copySingle()
+						layer.parent = parent
 
-					if @options[layer.name]?.constraints?
-						layer.setConstraints @options[layer.name].constraints, child
-					else
-						layer.setConstraints {}, child
+						@[layer.name] = layer
 
-					if child.children? && child.children.length > 0
-						@addChildren layer, child
+						layer.setConstraints @options[layer.name]?.constraints || {}, child
+
+						# if @options[layer.name]?.constraints?
+						# 	layer.setConstraints @options[layer.name].constraints, child
+						# else
+						# 	layer.setConstraints {}, child
+
+						if child.children? && child.children.length > 0
+							@addChildren layer, child
 
 
 			addStates: () ->
