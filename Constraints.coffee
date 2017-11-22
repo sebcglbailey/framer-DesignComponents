@@ -271,8 +271,3 @@ Object.defineProperty(Layer.prototype, "constraints", {
 		@setConstraints value
 
 })
-
-
-
-
-
