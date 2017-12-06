@@ -18,9 +18,9 @@ A module for converting your designs in design mode into full scalable classes.
 
 ## Installation
 
-### Automatic installation with Framer Modules
+### Automatic installation with [Framer Modules](https://www.framermodules.com/)
 
-<a href='https://open.framermodules.com/<MODULE NAME>'>
+<a href='https://open.framermodules.com/design-components-symbols'>
     <img alt='Install with Framer Modules'
     src='https://www.framermodules.com/assets/badge@2x.png' width='160' height='40' />
 </a>
