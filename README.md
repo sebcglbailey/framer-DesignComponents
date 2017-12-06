@@ -18,6 +18,15 @@ A module for converting your designs in design mode into full scalable classes.
 
 ## Installation
 
+### Automatic installation with Framer Modules
+
+<a href='https://open.framermodules.com/<MODULE NAME>'>
+    <img alt='Install with Framer Modules'
+    src='https://www.framermodules.com/assets/badge@2x.png' width='160' height='40' />
+</a>
+
+### Manual installation
+
 Download and move the <code>Constraints.coffee</code> and <code>DesignComponents.coffee</code> files to your modules folder.
 
 At the top of your file, place this line of code:
