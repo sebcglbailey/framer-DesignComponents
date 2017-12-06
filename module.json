@@ -1,0 +1,8 @@
+{
+	"name": "Design Components (Symbols)",
+	"description": "Create symbols in Framer design mode! A module for converting your designs in design mode into full scalable classes.",
+	"author": "Sebastian Bailey",
+	"require": "Design = require 'DesignComponents'",
+	"install": ["DesignComponents.coffee", "Constraints.coffee"],
+	"example": "snippet.coffee"
+}
