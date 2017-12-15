@@ -5,5 +5,8 @@
 
     "require": "Design = require 'DesignComponents'",
     "install": "DesignComponents.coffee",
-    "example": "snippet.coffee"
+    "example": "snippet.coffee",
+    
+    "dependencies": null,
+    "github": "https://github.com/sebcglbailey/framer-DesignComponents"
 }
