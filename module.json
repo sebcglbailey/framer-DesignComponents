@@ -4,5 +4,6 @@
     "author": "Sebastian Bailey",
     "require": "Design = require 'DesignComponents'",
     "install": "DesignComponents.coffee",
-    "example": "snippet.coffee"
+    "example": "snippet.coffee",
+    "dependencies": ""
 }
