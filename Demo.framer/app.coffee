@@ -66,12 +66,17 @@ card3 = new Design.Card
 		borderRadius: 0
 		image: Utils.randomImage()
 	subheader:
-		text: "Lorem ipsum\nNew subheader"
+		text: "Lorem ipsum"
 	content:
-		text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
 		constraints:
 			pushDown: true
 
+textString = "This is a string that can type itself\nTo show it animating over multiple lines\nWhich is really cool!"
+
+for i in [0..textString.length]
+	do (i) ->
+		Utils.delay i*0.1, ->
+			card3.content.text = textString.slice 0, i
 
 # Using states on a custom class to add events
 # # STATES WITH CUSTOM CLASSES
