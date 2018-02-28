@@ -58,17 +58,17 @@ buildConstraintsProtos = (constructorName) ->
 	
 	constructorName::setConstraints = (options={}, origin) ->
 		@constraintValues =
-			top: if typeof options?.top == "object" then null else if options?.top? && typeof options.top == "number" then options.top else origin?.constraintValues?.top || null
-			left: if typeof options?.left == "object" then null else if options?.left? && typeof options.top == "number" then options.top else origin?.constraintValues?.left || null
-			bottom: if typeof options?.bottom == "object" then null else if options?.pushDown then null else if options?.bottom? && typeof options.bottom == "number" then options.bottom else origin?.constraintValues?.bottom || null
-			right: if typeof options?.right == "object" then null else if options?.pushRight then null else if options?.right? && typeof options.right == "number" then options.right else origin?.constraintValues?.right || null
+			top: if typeof options?.top == "object" then null else options?.top ? origin?.constraintValues?.top ? null
+			left: if typeof options?.left == "object" then null else options?.top ? origin?.constraintValues?.left ? null
+			bottom: if typeof options?.bottom == "object" then null else if options?.pushDown then null else options?.bottom ? origin?.constraintValues?.bottom ? null
+			right: if typeof options?.right == "object" then null else if options?.pushRight then null else options?.right ? origin?.constraintValues?.right ? null
 			width: @width
 			height: @height
 			widthFactor: options?.scaleX || options?.widthFactor || null
 			heightFactor: options?.scaleY ||options?.heightFactor || null
 			centerAnchorX: options?.centerX || options?.centerAnchorX || null
 			centerAnchorY: options?.centerY || options?.centerAnchorY || null
-			aspectRatioLocked: if options?.aspectRatioLocked? then options.aspectRatioLocked else if origin?.constraintValues?.aspectRatioLocked? then origin.constraintValues.aspectRatioLocked else false
+			aspectRatioLocked: options?.aspectRatioLocked ? origin?.constraintValues?.aspectRatioLocked ? false
 
 		if options.pushDown?
 			@constraintValues.bottom = null
