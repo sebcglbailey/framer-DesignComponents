@@ -1,273 +1,4 @@
 
-moveFromRef = (layer, reference, moveRef, layerRef, refType) ->
-
-	originalConstraints = layer.constraintValues
-
-	originalRefValue = reference[layerRef]
-	originalLayerValue = layer[moveRef]
-
-	layer[moveRef] = reference[layerRef] + layer.constraintValues[refType].value
-
-	# reference.onChange layerRef, (value) ->
-	# 	layer[moveRef] = originalLayerValue + (value - originalRefValue)
-
-	layer.constraintValues = originalConstraints
-
-
-pushParent = (layer, direction) ->
-
-	if direction == "down"
-		originalY = layer.y
-		originalHeight = layer.height
-
-		layer.onChange "y", (value) ->
-			@parent.height += value - originalY
-			originalY = value
-			originalHeight = @height
-		layer.onChange "height", (value) ->
-			@parent.height += value - originalHeight
-			originalY = @y
-			originalHeight = value
-	
-	if direction == "right"
-		originalX = layer.x
-		originalWidth - layer.width
-
-		layer.onChange "x", (value) ->
-			@parent.width += value - originalX
-			originalX = value
-			originalWidth = @width
-		layer.onChange "width", (value) ->
-			@parent.width += value - originalWidth
-			originalX = @x
-			originalWidth = value
-
-
-addReferenceEvents = (layer) ->
-
-	originalConstraints = layer.constraintValues
-
-	if layer.constraintValues?.topRef?.layer? || layer.constraintValues?.bottomRef?.layer?
-
-		reference = layer.constraintValues?.topRef?.layer || layer.constraintValues?.bottomRef?.layer
-
-		originalYRef = reference.y
-		originalHeightRef = reference.height
-		originalY = layer.y
-
-		reference.onChange "y", (value) ->
-			layer.y = originalY + (value - originalYRef)
-			originalYRef = value
-			originalY = layer.y
-
-		unless layer.constraintValues?.topRef?.align == "y"
-			reference.onChange "height", (value) ->
-				layer.y = originalY + (value - originalHeightRef)
-				originalHeightRef = value
-				originalY = layer.y
-
-		if layer.constraintValues?.topRef? && layer.constraintValues?.bottomRef?
-			reference.onChange "height", (value) ->
-				layer.height = value - layer.constraintValues?.topRef.value - layer.constraintValues?.bottomRef.value
-				layer.y = reference.y + layer.constraintValues?.topRef.value
-				originalHeightRef = value
-
-	if layer.constraintValues?.leftRef?.layer? || layer.constraintValues?.rightRef?.layer?
-		reference = layer.constraintValues?.leftRef?.layer || layer.constraintValues?.rightRef?.layer
-
-		originalXRef = reference.x
-		originalWidthRef = reference.width
-		originalX = layer.x
-
-		reference.onChange "x", (value) ->
-			layer.x = originalX + (value - originalXRef)
-			originalXRef = value
-			originalX = layer.x
-
-		unless layer.constraintValues?.left?.align == "x"
-			reference.onChange "width", (value) ->
-				layer.x = originalX + (value - originalWidthRef)
-				originalWidthRef = value
-				originalX = layer.x
-
-		if layer.constraintValues?.leftRef? && layer.constraintValues?.rightRef?
-			reference.onChange "width", (value) ->
-				layer.width = value - layer.constraintValues?.leftRef.value - layer.constraintValues?.rightRef.value
-				layer.x = reference.x + layer.constraintValues?.leftRef.value
-				originalWidthRef = value
-
-
-buildConstraintsProtos = (constructorName) ->
-
-	constructorName = eval constructorName
-
-	constructorName::setConstraints = (options={}, origin) ->
-
-		@constraintValues =
-			top: if typeof options.top == "object" then null else if options.top? then options.top else if origin?.constraintValues? then origin.constraintValues.top else null
-			left: if typeof options.left == "object" then null else if options.left? then options.left else if origin?.constraintValues? then origin.constraintValues.left else null
-			bottom: if typeof options.bottom == "object" then null else if options.pushDown then null else if options.bottom? then options.bottom else if origin?.constraintValues? then origin.constraintValues.bottom else null
-			right: if typeof options.right == "object" then null else if options.pushRight then null  else if options.right? then options.right else if origin?.constraintValues? then origin.constraintValues.right else null
-			width: @width
-			height: @height
-			widthFactor: if options.scaleX? then options.scaleX else if options.widthFactor? then options.widthFactor else null
-			heightFactor: if options.scaleY? then options.scaleY else if options.heightFactor? then options.heightFactor else null
-			centerAnchorX: if options.centerX? then options.centerX else if options.centerAnchorX? then options.centerAnchorX else null
-			centerAnchorY: if options.centerY? then options.centerY else if options.centerAnchorY? then options.centerAnchorY else null
-			aspectRatioLocked: if options.aspectRatioLocked? then options.aspectRatioLocked else if origin?.constraintValues then origin.constraintValues.aspectRatioLocked else false
-
-		# resets
-		values = @constraintValues
-		if values.top? && values.bottom?
-			@constraintValues.heightFactor = null
-			@constraintValues.centerAnchorY = null
-		if values.left? && values.right?
-			@constraintValues.widthFactor = null
-			@constraintValues.centerAnchorX = null
-		if values.left? && values.right? && values.top? && values.bottom?
-			@constraintValues.aspectRatioLocked = false
-
-		for ref in [["top", "y", "maxY", "topRef", "bottom"], ["left", "x", "maxX", "leftRef", "right"], ["bottom", "maxY", "y", "bottomRef", "top"], ["right", "maxX", "x", "rightRef", "left"]]
-
-			if typeof options[ref[0]] == "object" && options[ref[0]] != null && !options[ref[3]]?
-
-				if options[ref[0]].layer?
-					if @parent? && @parent.selectChild(options[ref[0]].layer)?
-						layer = @parent.selectChild options[ref[0]].layer
-					else
-						layer = Layer.select options[ref[0]].layer
-				else layer = @parent
-
-				align = null
-
-				if !options[ref[0]].value? && layer == @parent
-					value = @[ref[1]]
-				else if options[ref[0]].align? && options[ref[0]].value?
-					value = options[ref[0]].value
-					align = options[ref[0]].align
-				else if options[ref[0]].align?
-					value = 0
-					align = options[ref[0]].align
-				else if !options[ref[0]].value? && !options[ref[0]].align?
-					value = @[ref[1]] - layer[ref[2]]
-					align = ref[4]
-				else
-					value = options[ref[0]].value
-					align = ref[4]
-
-				if align == "left" then align = "x"
-				else if align == "right" then align = "maxX"
-				else if align == "top" then align = "y"
-				else if align == "bottom" then align = "maxY"
-
-				@constraintValues[ref[3]] =
-					layer: layer
-					value: value
-					align: align
-
-				@constraintValues[ref[0]] = null
-				@constraintValues[ref[4]] = null
-
-				# moveFromRef @, layer, ref[1], ref[2], ref[3]
-
-		if options.pushDown?
-			@constraintValues.bottom = null
-			pushParent @, "down"
-		if options.pushRight?
-			@constraintValues.right = null
-			pushParent @, "right"
-
-		unless options.pushDown || @constraintValues.topRef || @constraintValues.bottomRef
-			@constraintValues.bottom = if options.bottom? then options.bottom else if origin?.constraintValues? then origin.constraintValues.bottom else null
-		unless options.pushRight || @constraintValues.leftRef || @constraintValues.rightRef
-			@constraintValues.right = if options.right? then options.right else if origin?.constraintValues? then origin.constraintValues.right else null
-
-		if @constraintValues.top == null && @constraintValues.bottom == null && @constraintValues.centerAnchorY == null && !@constraintValues.topRef && !@constraintValues.bottomRef
-			@constraintValues.top = @y
-		if @constraintValues.left == null && @constraintValues.right == null && @constraintValues.centerAnchorX == null && !@constraintValues.leftRef && !@constraintValues.rightRef
-			@constraintValues.left = @x
-
-		@applyConstraints()
-
-
-	constructorName::applyConstraints = ->
-
-		return if !@constraintValues
-
-		values = @constraintValues
-
-		if !@parent then parent = Screen else parent = @parent
-
-		aspectRatio = @width / @height
-
-		# position
-		if values.top? && typeof values.top != "object"
-			@y = values.top
-		else if values.top == null && values.topRef?.layer?
-			@y = values.topRef.layer[values.topRef.align] + values.topRef.value
-
-		if values.left? && typeof values.left != "object"
-			@x = values.left
-		else if values.left == null && values.leftRef?.layer?
-			@x = values.leftRef.layer[values.leftRef.align] + values.leftRef.value
-
-		# size
-		if values.left? && values.right?
-			@width = parent.width - @x - values.right
-			if values.aspectRatioLocked
-				@height = @width / aspectRatio
-		if values.top? && values.bottom?
-			@height = parent.height - @y - values.bottom
-			if values.aspectRatioLocked
-				@width = @height * aspectRatio
-
-		# if values.leftRef? && values.rightRef?
-		# 	@width = parent.width - values.leftRef.value - values.rightRef.value
-		# if values.topRef? && values.bottomRef?
-		# 	@height = parent.height - values.topRef.value - values.bottomRef.value
-
-		if values.widthFactor?
-			@width = parent.width * values.widthFactor
-		if values.heightFactor?
-			@height = parent.height * values.heightFactor
-
-		# max position
-		if values.right? 
-			@maxX = parent.width - values.right
-		else if values.right == null && values.rightRef?.layer?
-			@maxX = values.rightRef.layer[values.rightRef.align] - values.rightRef.value
-		if values.bottom?
-			@maxY = parent.height - values.bottom
-		else if values.bottom == null && values.bottomRef?.layer?
-			@maxY = values.bottomRef.layer[values.bottomRef.align] - values.bottomRef.value
-
-		# center position
-		if !values.left? && !values.right? && values.centerAnchorX?
-			@midX = parent.width * values.centerAnchorX
-		if !values.top? && !values.bottom? && values.centerAnchorY?
-			@midY = parent.height * values.centerAnchorY
-
-		@constraintValues = values
-
-		addReferenceEvents(@)
-
-
-layerTypes = ["Layer", "TextLayer", "ScrollComponent", "PageComponent", "SliderComponent", "RangeSliderComponent", "SVGLayer", "BackgroundLayer"]
-for type in layerTypes
-	buildConstraintsProtos(type)
-
-
-
-Object.defineProperty(Layer.prototype, "constraints", {
-
-	get: -> return @_constraints
-	set: (value) ->
-		@_constraints = value
-		@emit "change:constraints", value
-		@setConstraints value
-
-});
-
 ###
 ------------------
 CUSTOM CLASSES
@@ -310,99 +41,187 @@ stateChangeProps = [
 ]
 
 
+pushParent = (layer, direction) ->
+	layer.pushValues =
+		marginBottom: layer.parent.height - layer.maxY
+		marginRight: layer.parent.width - layer.maxX
+
+	if direction == "down"
+		layer.onChange "y", ->
+			@parent.height = layer.maxY + @pushValues.marginBottom
+		layer.onChange "height", ->
+			@parent.height = layer.maxY + @pushValues.marginBottom
+
+buildConstraintsProtos = (constructorName) ->
+
+	constructorName = eval constructorName
+	
+	constructorName::setConstraints = (options={}, origin) ->
+		@constraintValues =
+			top: if typeof options?.top == "object" then null else if options?.top? && typeof options.top == "number" then options.top else origin?.constraintValues?.top || null
+			left: if typeof options?.left == "object" then null else if options?.left? && typeof options.top == "number" then options.top else origin?.constraintValues?.left || null
+			bottom: if typeof options?.bottom == "object" then null else if options?.pushDown then null else if options?.bottom? && typeof options.bottom == "number" then options.bottom else origin?.constraintValues?.bottom || null
+			right: if typeof options?.right == "object" then null else if options?.pushRight then null else if options?.right? && typeof options.right == "number" then options.right else origin?.constraintValues?.right || null
+			width: @width
+			height: @height
+			widthFactor: options?.scaleX || options?.widthFactor || null
+			heightFactor: options?.scaleY ||options?.heightFactor || null
+			centerAnchorX: options?.centerX || options?.centerAnchorX || null
+			centerAnchorY: options?.centerY || options?.centerAnchorY || null
+			aspectRatioLocked: if options?.aspectRatioLocked? then options.aspectRatioLocked else if origin?.constraintValues?.aspectRatioLocked? then origin.constraintValues.aspectRatioLocked else false
+
+		if options.pushDown?
+			@constraintValues.bottom = null
+			pushParent @, "down"
+		if options.pushRight?
+			@constraintValues.right = null
+			pushParent @, "right"
+
+		constraints = @constraintValues
+		textLayerAutoSize = typeof @ == TextLayer && @autoSize
+
+		@onChange "y", ->
+			@constraintValues = constraints
+		@onChange "x", ->
+			@constraintValues = constraints
+		@onChange "height", ->
+			@constraintValues = constraints
+		@onChange "width", ->
+			@constraintValues = constraints
+
+		@applyConstraints()
+
+	constructorName::applyConstraints = ->
+
+		return if !@constraintValues
+
+		values = @constraintValues
+
+		if !@parent then parent = Screen else parent = @parent
+
+		aspectRatio = @width / @height
+
+		# position
+		if values.top? && typeof values.top != "object"
+			@y = values.top
+		else if values.top == null && values.topRef?.layer?
+			@y = values.topRef.layer[values.topRef.align] + values.topRef.value
+
+		if values.left? && typeof values.left != "object"
+			@x = values.left
+		else if values.left == null && values.leftRef?.layer?
+			@x = values.leftRef.layer[values.leftRef.align] + values.leftRef.value
+
+		# size
+		if values.left? && values.right?
+			@width = parent.width - @x - values.right
+			if values.aspectRatioLocked
+				@height = @width / aspectRatio
+		if values.top? && values.bottom?
+			@height = parent.height - @y - values.bottom
+			if values.aspectRatioLocked
+				@width = @height * aspectRatio
+
+		if values.widthFactor?
+			@width = parent.width * values.widthFactor
+		if values.heightFactor?
+			@height = parent.height * values.heightFactor
+
+		# max position
+		if values.right? 
+			@maxX = parent.width - values.right
+		else if values.right == null && values.rightRef?.layer?
+			@maxX = values.rightRef.layer[values.rightRef.align] - values.rightRef.value
+		if values.bottom?
+			@maxY = parent.height - values.bottom
+		else if values.bottom == null && values.bottomRef?.layer?
+			@maxY = values.bottomRef.layer[values.bottomRef.align] - values.bottomRef.value
+
+		# center position
+		if !values.left? && !values.right? && values.centerAnchorX?
+			@midX = parent.width * values.centerAnchorX
+		if !values.top? && !values.bottom? && values.centerAnchorY?
+			@midY = parent.height * values.centerAnchorY
+
+		@constraintValues = values
+
+
+layerTypes = ["Layer", "TextLayer", "ScrollComponent", "PageComponent", "SliderComponent", "RangeSliderComponent", "SVGLayer", "BackgroundLayer", "SVGPath", "SVGGroup"]
+for type in layerTypes
+	buildConstraintsProtos(type)
+
+Object.defineProperty(Layer.prototype, "constraints", {
+	get: -> return @constraintValues
+	set: (value) ->
+		@_constraints = value
+		@emit "change:constraints", value
+		@setConstraints value
+})
 
 for component in customComponents
-
 	name = component.name.replace "Custom_", ""
 
 	do (component, name) ->
 
 		class exports[name] extends Layer
-
 			constructor: (@options={}) ->
-
 				super @options
+				@props = Object.assign component.props, {parent: @options.parent || null}
 
-				@props = Object.assign component.props, {parent: @options.parent}
-				@parent = @options.parent ?= Screen.content
+				if @options.constraints?
+					@constraints = @options.constraints
+				
+				@props = @options
 
 				@addChildren()
-				@setChildProps()
-				
+				@assignChildren()
+				@setDescendantProps()
+				@setDescendantConstraints()
+
 				@stateComponents = Layer.selectAll "*State_#{name}*"
 				@addStates()
 
-				@originalProps = @props
-
-				@setConstraints @options.constraints, component
-
-				@props = @options
-
-				@setConstraints()
-
 				if @options.state?
-					# state = Layer.select "#{@options.state}_State_#{name}*"
 					@animateState @options.state, false
 
-				# @setTextProps()
+			addChildren: ->
+				newParent = component.copy()
+				for child in newParent.children
+					if child instanceof SVGPath or child instanceof SVGGroup
+						Utils.throwInStudioOrWarnInProduction "SVG '#{child.name}' in  'Custom_#{name}' must be wrapped in a Frame in order to create a Design Component Symbol"
+					else
+						child.parent = @
+						if child instanceof TextLayer && component.selectChild(child.name)?
+							child.autoSize = true
+				newParent.destroy()
 
-			setTextProps: (parent) ->
+			assignChildren: ->
 				for descendant in @descendants
+					@[descendant.name] = descendant
 
-					if @options[descendant.name]? && @[descendant.name]?
+			setDescendantProps: ->
+				for descendant in @descendants
+					do (descendant) =>
+						if @options[descendant.name]
+							@[descendant.name].constraints = @options[descendant.name].constraints || undefined
+							@[descendant.name].props = @options[descendant.name]
 
-						@[descendant.name].props = @options[descendant.name]
+			setDescendantConstraints: ->
+				for descendant in @descendants
+					decName = descendant.name
+					origin = component.selectChild decName
+					descendant.setConstraints(
+						@options[decName]?.constraints || {},
+						origin
+					)
 
-			setChildProps: (parent) ->
-
-				for key, value of @options
-					if @[key]? && (@[key] instanceof Layer || @[key] instanceof TextLayer)
-
-						if @[key].constructor.name == "TextLayer" && @[key].autoSize != true
-							@[key].props = value
-							width = @[key].width
-							@[key].autoSize = true
-							@[key].width = width
-						else
-							@[key].props = value
-
-
-
-			addChildren: (parent, origin) ->
-
-				if !origin? then origin = component
-				if !parent? then parent = @
-
-				for child in origin.children
-
-					do (child) =>
-
-						layer = child.copySingle()
-						layer.parent = parent
-
-						@[layer.name] = layer
-
-						layer.setConstraints @options[layer.name]?.constraints || {}, child
-
-						# if @options[layer.name]?.constraints?
-						# 	layer.setConstraints @options[layer.name].constraints, child
-						# else
-						# 	layer.setConstraints {}, child
-
-						if child.children? && child.children.length > 0
-							@addChildren layer, child
-
-
-			addStates: () ->
-
+			addStates: ->
 				@customStates =
 					array: []
 
 				for state in @stateComponents
-
 					do (state) =>
-
-						stateIndex = state.name.indexOf("State")
+						stateIndex = state.name.indexOf "State"
 						if stateIndex > 0
 							stateName = state.name.slice 0, stateIndex-1
 						else
@@ -411,48 +230,41 @@ for component in customComponents
 						@customStates[stateName] = {}
 						@customStates.array.push stateName
 
-						stateProps = {}
+						addProps = (layer, origin) ->
+							stateProps = {}
+							for prop in stateChangeProps
+								stateProps[prop] = origin[prop]
+							layer.states[stateName] = stateProps
 
-						for prop in stateChangeProps
-							stateProps[prop] = state[prop]
+						addProps @, state
 
-						@states[stateName] = stateProps
-
-						for dec in state.descendants
-							do (dec) =>
-								thisStateProps = {}
-								for prop in stateChangeProps
-									do (prop) =>
-										thisStateProps[prop] = dec[prop]
-								@[dec.name].states[stateName] = thisStateProps
+						for descendant in state.descendants
+							do (descendant) =>
+								addProps @[descendant.name], descendant
 
 				@addStateEvents()
 
-			addStateEvents: () ->
-
+			addStateEvents: ->
 				events = []
 
 				for state in @stateComponents
+					if state.name.includes "_State_#{name}"
+						stateName = state.name.split("_State_#{name}")[0]
+						eventName = state.name.split("_State_#{name}")[1]
+					else
+						eventName = state.name.replace "State_#{name}_", ""
+						stateName = eventName
 
-					do (state) =>
+					if eventName.includes "_Animate"
+						animate = true
+						eventName = eventName.split("_Animate")[0]
+					else animate = false
+					
+					eventName = eventName.replace "_", ""
 
-						if state.name.includes "State_#{name}_"
+					@customStates[stateName].animate = animate
 
-							if state.name.includes "_State_#{name}_"
-								stateName = state.name.split("_State_#{name}_")[0]
-								eventName = state.name.split("_State_#{name}_")[1]
-							else
-								eventName = state.name.replace "State_#{name}_", ""
-								stateName = eventName
-
-							if eventName.includes "_Animate" || eventName.includes "_true" || eventName.includes "_True"
-								animate = true
-								eventName = eventName.split("_")[0]
-							else animate = false
-
-							@customStates[stateName].animate = animate
-
-							unless events.includes eventName then events.push eventName
+					unless events.includes eventName then events.push eventName
 
 				for eventName in events
 
@@ -462,8 +274,8 @@ for component in customComponents
 
 							@on Events[eventName], (event, layer) ->
 
-								animate = @customStates[eventName].animate
-								@stateSwitch(eventName, {animate: animate})
+								animateBool = @customStates[eventName].animate
+								@stateSwitch(eventName, {animate: animateBool})
 								@animateChildren()
 
 						else if Events[eventName]?
@@ -472,10 +284,10 @@ for component in customComponents
 								currentIndex = @customStates.array.indexOf(@states.current.name)
 								nextIndex = currentIndex + 1
 								if nextIndex == @customStates.array.length then nextIndex = 0
-								animate = @customStates[@customStates.array[nextIndex]].animate
+								animateBool = @customStates[@customStates.array[nextIndex]].animate
 								nextState = @customStates.array[nextIndex]
 								
-								@stateSwitch(nextState, {animate: animate})
+								@stateSwitch(nextState, {animate: animateBool})
 								@animateChildren()
 
 			animateChildren: (stateName, animate, options={}) ->
@@ -494,13 +306,6 @@ for component in customComponents
 
 				@stateSwitch(state, {animate: animate, options: options})
 				@animateChildren(state, animate, options)
-
-			@define "constraints",
-				get: -> @options.constraints
-				set: (value) ->
-					@options.constraints = value
-					@emit("change:constraints", @options.constraints)
-					@setConstraints value
 
 			@define "state",
 				get: -> @options.state

@@ -9,6 +9,8 @@ Screen.backgroundColor = "#886AE2"
 scroll = new ScrollComponent
 	size: Screen
 	scrollHorizontal: false
+	mouseWheelEnabled: true
+	mouseWheelSpeedMultiplier: 0.125
 scroll.content.clip = false
 
 
@@ -68,34 +70,25 @@ card3 = new Design.Card
 	content:
 		text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
 		constraints:
-			top:
-				layer: "subheader"
 			pushDown: true
 
-# Using states on a custom class to add events
-# STATES WITH CUSTOM CLASSES
 
-# Button will have a "MouseDown" and "MouseUp" event listener
+# Using states on a custom class to add events
+# # STATES WITH CUSTOM CLASSES
+
+# # Button will have a "MouseDown" and "MouseUp" event listener
 button = new Design.Button
 	parent: scroll.content
 	name: "button"
 	y: card3.maxY + 50
 	x: Align.center
-	constraints:
-		top:
-			layer: "card3"
-			value: 50
 
-# Toggle will have multiple states that it will cycle through on "Tap"
+# # # Toggle will have multiple states that it will cycle through on "Tap"
 toggle = new Design.Toggle
 	parent: scroll.content
 	name: "toggle"
 	y: button.maxY + 50
 	x: Align.center
-	constraints:
-		top:
-			layer: "button"
-			value: 50
 
 # Using states on a custom class without an event
 # STATES WITHOUT AN EVENT LISTENER
@@ -112,7 +105,7 @@ emoji = new Design.Emoji
 emoji.state = "Wink"
 emoji.state = Utils.randomChoice ["Smile", "Angel", "Wink", "Unamused"]
 
-# Animating between states
+# # Animating between states
 emoji.onTap ->
 	currentState = @states.current.name
 

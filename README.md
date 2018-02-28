@@ -86,6 +86,8 @@ card = new Design.Card
 
 ![Custom Card](images/Card2.png)
 
+> **IMPORTANT:** Any SVG Layer in Design mode **must** be wrapped inside of a frame for this module to work.
+
 #### Editing the contents of the class in code
 
 ```coffeescript
@@ -104,11 +106,9 @@ card = new Design.Card
 
 ## Constraints
 
-This module uses constraints by default, so you will need to include the [<code>Constraints.coffee</code>](Constraints.coffee) module otherwise it will not work.
+With this module comes the ability to set constraints to your layers in code as well as design.
 
-This module duplicates the constraints that you have set in design mode, to your new class, and all of its children. So that you can resize the parent and it will reflect in the positioning and sizing of the children.
-
-It also allows you to set up your own constraints within the code, using a simpler syntax than the native constraints.
+When oyu initiate an instance of your symbol, it will automatically copy over the constraints of the design layer, but you are now able to override these upon initialisation, and later.
 
 ### Setting constraints on a new layer
 
@@ -123,8 +123,8 @@ It also allows you to set up your own constraints within the code, using a simpl
 * <code>scaleX</code> – the width of the layer relative to its parent width as a ratio between 0 - 1.
 * <code>scaleY</code> – the height of the layer relative to its parent height as a ratio between 0 - 1.
 * <code>aspectRatioLocked</code> – the original ratio of width/height of the layer stays the same if set to <code>true</code>.
-* <code>pushDown</code> - have the size of the layer affect its parent's height (best used with TextLayers).
-* <code>pushRight</code> - the same as <code>pushDown</code> but affecting the parent's width.
+* <code>pushDown</code> – If you want the layer to resize its parent when it resizes or moves, keeping the same original margin. I.e. when you add multiple lines to a text layer. NOTE: The layer cannot have a <code>bottom</code> constraint set for this to work.
+* <code>pushRight</code> – The same as <code>pushDown</code> but with the width of the parent. NOTE: The layer cannot have a <code>right</code> constraints set for this to work.
 
 ```coffeescript
 layer = new Layer
@@ -144,30 +144,6 @@ layer.constraints =
   pushRight: null
 ```
 
-In addition to an easier syntax to the Framer native constraints, you can now also add a constraint to a specific layer. i.e. if you want to have a layer always lie 10px below another layer, you can now do that, no matter what the position or size of the reference layer.
-
-#### Arguments
-
-* <code>layer</code> – the name of the layer that you are referencing (the reference layer **must** have a <code>name</code> property).
-* <code>value</code> – the offset from the reference layer.
-* <code>align</code> – align the layer to an edge on the reference layer. (Default: opposite edge)
-
-```coffeescript
-reference = new Layer
-  name: "reference"
-
-layer.constraints =
-  top:
-    layer: "reference"
-    value: 10
-    align: "top"
-  left:
-    layer: "reference"
-    value: 20
-```
-
-
-**Note:** Using the <code>constraints</code> property, you will have to set the constraints after the initilisation of the layer.
 
 ### Setting constraints on a layer within a custom class
 
@@ -187,9 +163,7 @@ card = new Design.Card
   content:
     text: "Lorem ipsum dolor sit amet.\nNew content\nMore new content"
     constraints:
-      top:
-        layer: "subheader"
-      pushDown: true
+    	pushDown: true
 ```
 
 See it in action:

@@ -252,7 +252,7 @@ buildConstraintsProtos = (constructorName) ->
 		addReferenceEvents(@)
 
 
-layerTypes = ["Layer", "TextLayer", "ScrollComponent", "PageComponent", "SliderComponent", "RangeSliderComponent", "SVGLayer", "BackgroundLayer"]
+layerTypes = ["Layer", "TextLayer", "ScrollComponent", "PageComponent", "SliderComponent", "RangeSliderComponent", "SVGLayer", "BackgroundLayer", "SVGPath", "SVGGroup"]
 for type in layerTypes
 	buildConstraintsProtos(type)
 
