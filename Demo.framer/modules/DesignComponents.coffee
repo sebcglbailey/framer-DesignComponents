@@ -39,7 +39,7 @@ stateChangeProps = [
 	"image", "gradient",
 	"text"
 ]
-
+	
 
 pushParent = (layer, direction) ->
 	layer.pushValues =
@@ -145,6 +145,32 @@ buildConstraintsProtos = (constructorName) ->
 
 		@constraintValues = values
 
+	constructorName::pinToLayer = (options={}) ->
+		layer = options.layer
+		side = options.side ? "bottom"
+
+		switch side
+			when "bottom"
+				ref = "height"
+				change = "y"
+			when "top"
+				ref = "y"
+				change = "maxY"
+			when "right"
+				ref = "width"
+				change = "x"
+			when "left"
+				ref = "x"
+				change = "maxX"
+
+		if typeof layer is "string" then layer = @parent.selectChild layer
+
+		value = options.value ? layer[ref] - @[change] ? 0
+
+		layer.onChange ref, (changeVal) =>
+			@[change] = layer[change] + layer[ref] + value
+
+
 
 layerTypes = ["Layer", "TextLayer", "ScrollComponent", "PageComponent", "SliderComponent", "RangeSliderComponent", "SVGLayer", "BackgroundLayer", "SVGPath", "SVGGroup"]
 for type in layerTypes
@@ -156,6 +182,15 @@ Object.defineProperty(Layer.prototype, "constraints", {
 		@_constraints = value
 		@emit "change:constraints", value
 		@setConstraints value
+})
+
+Object.defineProperty(Layer.prototype, "pin", {
+	get: -> return @_pin
+	set: (value) ->
+		@_pin = value
+		@emit "change:pin", value
+		if value?.layer?
+			@pinToLayer value
 })
 
 for component in customComponents
@@ -170,6 +205,8 @@ for component in customComponents
 
 				if @options.constraints?
 					@constraints = @options.constraints
+				if @options.pin?
+					@pinToLayer @options.pin
 				
 				@props = @options
 
@@ -203,7 +240,8 @@ for component in customComponents
 				for descendant in @descendants
 					do (descendant) =>
 						if @options[descendant.name]
-							@[descendant.name].constraints = @options[descendant.name].constraints || undefined
+							@[descendant.name].constraints = @options[descendant.name].constraints ? undefined
+							@[descendant.name].pin = @options[descendant.name].pin
 							@[descendant.name].props = @options[descendant.name]
 
 			setDescendantConstraints: ->

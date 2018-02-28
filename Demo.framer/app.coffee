@@ -70,12 +70,16 @@ card3 = new Design.Card
 	content:
 		constraints:
 			pushDown: true
+		pin:
+			layer: "subheader"
+			value: 10
 
+card3.subheader.text = "Lorem ipsum\nNew Line"
 textString = "This is a string that can type itself\nTo show it animating over multiple lines\nWhich is really cool!"
 
 for i in [0..textString.length]
 	do (i) ->
-		Utils.delay i*0.1, ->
+		Utils.delay i*0.05, ->
 			card3.content.text = textString.slice 0, i
 
 # Using states on a custom class to add events
