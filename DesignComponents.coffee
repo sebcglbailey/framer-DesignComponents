@@ -236,8 +236,11 @@ for component in customComponents
 
                             if origin instanceof SVGLayer
                                 split1 = origin['html'].split(/opacity/)[1]
-                                split2 = split1.split(/"/)[1]
-                                stateProps['opacity'] = split2
+                                if (split1[0] != ':')
+                                    split2 = split1.split(/"/)[1]
+                                    stateProps['opacity'] = split2
+                                else
+                                    stateProps['opacity'] = "1.0"
 
                             layer.states[stateName] = stateProps
 
